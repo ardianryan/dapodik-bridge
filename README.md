@@ -1,14 +1,37 @@
-# 🌉 Dapodik Bridge
+<p align="center">
+  <img src="https://dapo.kemendikdasmen.go.id/assets/logo-dapodik-BZDG7c6h.png" alt="Dapodik Logo" width="140" />
+</p>
 
-[![Test & Lint](https://github.com/ardianryan/dapodik-bridge/actions/workflows/test.yml/badge.svg)](https://github.com/ardianryan/dapodik-bridge/actions/workflows/test.yml)
-[![Release](https://github.com/ardianryan/dapodik-bridge/actions/workflows/release.yml/badge.svg)](https://github.com/ardianryan/dapodik-bridge/actions/workflows/release.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?logo=go)](https://go.dev)
-[![Default Port](https://img.shields.io/badge/Default%20Port-4712-orange.svg)](#konfigurasi-port)
+<h1 align="center">dapodik-bridge</h1>
 
-Daemon jembatan lokal (*local bridge daemon*) berbasis **Go (Golang)** berkinerja tinggi, berukuran ringkas (~12 MB single binary), dan hemat memori (< 15 MB RAM) yang membaca database internal PostgreSQL aplikasi **Dapodik Desktop** secara **Strict Read-Only (`SELECT` only)**.
+<p align="center">
+  <a href="https://github.com/ardianryan/dapodik-bridge/releases"><img src="https://img.shields.io/github/v/release/ardianryan/dapodik-bridge?style=flat-square" alt="GitHub release" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT--NC-blue.svg?style=flat-square" alt="License: MIT-NC" /></a>
+  <a href="https://go.dev"><img src="https://img.shields.io/badge/Go-%3E%3D1.22-00ADD8.svg?style=flat-square&logo=go" alt="Go version" /></a>
+  <a href="#-konfigurasi-port-kustom-4712"><img src="https://img.shields.io/badge/Port-4712-orange.svg?style=flat-square" alt="Default Port" /></a>
+  <a href="https://github.com/ardianryan/dapodik-bridge/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/ardianryan/dapodik-bridge/test.yml?branch=main&style=flat-square&label=Tests" alt="Test Status" /></a>
+  <a href="https://www.instagram.com/smansagewithai/"><img src="https://img.shields.io/badge/Instagram-@smansagewithai-E4405F.svg?style=flat-square&logo=instagram&logoColor=white" alt="Instagram" /></a>
+</p>
 
-`dapodik-bridge` dirancang khusus untuk kebutuhan pengembangan **Website Sekolah, Portal PPDB Afirmasi, Sistem Monitoring Bansos/Kesejahteraan Siswa (PIP, KIP, PKH, KKS, KPS), serta Sinkronisasi Nilai Rapor Multi-Semester**.
+<p align="center">
+  Daemon jembatan lokal (<i>local bridge daemon</i>) berbasis <b>Go (Golang)</b> berkinerja tinggi, berukuran ringkas (~12 MB <i>single binary</i>), dan hemat memori (&lt; 15 MB RAM) yang membaca database internal PostgreSQL aplikasi <b>Dapodik Desktop</b> secara <b>Strict Read-Only (<code>SELECT</code> only)</b>.
+</p>
+
+<p align="center">
+  Dipublikasikan dan dikelola oleh <b>SMA Negeri 1 Gedeg (<a href="https://www.instagram.com/smansagewithai/">@smansagewithai</a>)</b><br />
+  Dikembangkan oleh <b>Ryan Ardian</b> (<a href="mailto:inisaya@ardianryan.com">inisaya@ardianryan.com</a>)
+</p>
+
+---
+
+> [!IMPORTANT]
+> ### 📢 Pernyataan Penyangkalan (Disclaimer) & Misi Terbuka
+> **`dapodik-bridge` adalah perangkat lunak *Unofficial* (tidak resmi) dan independen.** Daemon ini dikembangkan sebagai inisiatif komunitas sumber terbuka (*open-source*) oleh **SMA Negeri 1 Gedeg** dan **Ryan Ardian**, tanpa afiliasi langsung secara struktural dengan Kementerian Pendidikan Dasar dan Menengah (Kemendikdasmen).
+>
+> **Tujuan & Misi Pengembangan**:
+> Daemon ini lahir atas semangat memajukan transformasi digital dan interoperabilitas sistem informasi sekolah di Indonesia. Tujuan utamanya adalah **memberdayakan pengembang web sekolah, portal PPDB afirmasi/zonasi/prestasi, e-Rapor, serta sistem monitoring bansos kesejahteraan siswa** agar dapat mengakses data yang tidak terekspos oleh antarmuka bawaan secara aman, instan, hemat memori, dan tanpa membebani komputer kerja operator Dapodik.
+>
+> Seluruh hak cipta nama, logo, dan merek dagang **Dapodik (Data Pokok Pendidikan)** adalah milik sah **Kementerian Pendidikan Dasar dan Menengah Republik Indonesia**.
 
 ---
 
@@ -16,6 +39,7 @@ Daemon jembatan lokal (*local bridge daemon*) berbasis **Go (Golang)** berkinerj
 - [Arsitektur Sistem](#-arsitektur-sistem)
 - [Mengapa Go & Bukan Framework Berat?](#-mengapa-go--bukan-framework-berat)
 - [Keamanan & Jaminan Strict Read-Only](#-keamanan--jaminan-strict-read-only)
+- [Kepatuhan UU Perlindungan Data Pribadi](#-kepatuhan-uu-perlindungan-data-pribadi-uu-pdp-no-272022)
 - [Daftar Lengkap Endpoint REST API](#-daftar-lengkap-endpoint-rest-api)
   - [1. Healthcheck (`GET /api/v1/health`)](#1-healthcheck-get-apiv1health)
   - [2. Bansos & Kesejahteraan Lengkap (`GET /api/v1/kesejahteraan`)](#2-bansos--kesejahteraan-lengkap-get-apiv1kesejahteraan)
@@ -33,6 +57,8 @@ Daemon jembatan lokal (*local bridge daemon*) berbasis **Go (Golang)** berkinerj
   - [1. Cloudflare Tunnel (cloudflared)](#1-cloudflare-tunnel-cloudflared-direkomendasikan)
   - [2. Nginx Reverse Proxy](#2-nginx-reverse-proxy)
 - [Variabel Lingkungan (.env) & CLI Flags](#-variabel-lingkungan-env--cli-flags)
+- [Lisensi & Ketentuan Penggunaan Non-Komersial](#-lisensi--ketentuan-penggunaan-non-komersial)
+- [Dokumen Pendukung Repositori](#-dokumen-pendukung-repositori)
 
 ---
 
@@ -41,28 +67,28 @@ Daemon jembatan lokal (*local bridge daemon*) berbasis **Go (Golang)** berkinerj
 ```mermaid
 flowchart LR
     subgraph PC_Operator["Laptop / Komputer Operator Sekolah"]
-        DAPODIK["Dapodik Desktop\n(PostgreSQL 127.0.0.1:5432)"]
-        BRIDGE["dapodik-bridge.exe\n(Listen Port :4712)\n[Strict Read-Only]"]
-        TUNNEL["Cloudflare Tunnel /\nReverse Proxy Client"]
+        DAPODIK["Dapodik Desktop<br/>(PostgreSQL 127.0.0.1:5432)"]
+        BRIDGE["dapodik-bridge.exe<br/>(Listen Port :4712)<br/>[Strict Read-Only]"]
+        TUNNEL["Cloudflare Tunnel /<br/>Reverse Proxy Client"]
         
-        DAPODIK -->|Local IPC / SELECT only| BRIDGE
-        BRIDGE -->|HTTP :4712| TUNNEL
+        DAPODIK -->|"Local IPC / SELECT only"| BRIDGE
+        BRIDGE -->|"HTTP :4712"| TUNNEL
     end
 
     subgraph Cloud_Server["Cloud / Web Server Sekolah"]
-        WEB["Website Sekolah / PPDB\n(Laravel, Node.js, Next.js, dsb.)"]
+        WEB["Website Sekolah / PPDB<br/>(Laravel, Node.js, Next.js, dsb.)"]
         WEBHOOK["Endpoint /api/dapodik/webhook"]
     end
 
-    TUNNEL -->|Secure TLS Tunnel| WEB
-    BRIDGE -.->|Auto-Push Data (POST)| WEBHOOK
+    TUNNEL -->|"Secure TLS Tunnel"| WEB
+    BRIDGE -.->|"Auto-Push Data (POST)"| WEBHOOK
 ```
 
 ---
 
 ## 🚀 Mengapa Go & Bukan Framework Berat?
 
-1. **Zero Runtime Dependency**: Tidak memerlukan instalasi PHP, Composer, Laragon, XAMPP, Node.js, atau Python di laptop operator sekolah. Cukup unduh satu file `.exe` dan langsung klik dua kali untuk menjalankan.
+1. **Zero Runtime Dependency**: Tidak membutuhkan instalasi PHP, Composer, Laragon, XAMPP, Node.js, atau Python di laptop operator sekolah. Cukup unduh satu file `.exe` dan langsung klik dua kali untuk menjalankan.
 2. **Super Ringan**: Penggunaan memori hanya **~12 - 15 MB RAM**, tidak membebani laptop operator sekolah yang sedang menjalankan Dapodik Desktop.
 3. **Instan Boot**: Menyala dalam hitungan milidetik.
 4. **Port Kustom Aman (`4712`)**: Port default disetel ke `4712` agar tidak konflik dengan port default Dapodik (`5774`), PostgreSQL (`5432`), atau Apache/Nginx (`80/8080`).
@@ -81,6 +107,15 @@ flowchart LR
    PostgreSQL secara native akan menolak query penulisan apa pun (`ERROR: cannot execute INSERT/UPDATE/DELETE in a read-only transaction`).
 2. **Query Level Sanitization**: Seluruh query internal hanya menggunakan perintah `SELECT`. Query yang mengandung kata kunci DDL/DML seperti `INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE` langsung diblokir sebelum mencapai database.
 3. **Prepared Statements**: Seluruh parameter pencarian menggunakan parameterized placeholder (`$1`, `$2`, dst.) sehingga 100% bebas dari risiko SQL Injection.
+
+---
+
+## ⚠️ Kepatuhan UU Perlindungan Data Pribadi (UU PDP No. 27/2022)
+
+Database internal Dapodik Desktop memuat **Data Pribadi Spesifik dan Umum** (seperti NIK, NISN, nama lengkap, riwayat bansos/PIP/KIP, koordinat tempat tinggal, data orang tua/wali siswa, dan profil guru/GTK).
+
+> [!CAUTION]
+> **Sanksi Pidana & Administratif**: Setiap operator dan pengembang wajib mematuhi **UU Perlindungan Data Pribadi No. 27 Tahun 2022 Pasal 67**. Gunakan data Dapodik semata-mata untuk kepentingan sah institusi pendidikan, lindungi API Key daemon, dan dilarang keras memperjualbelikan atau mengekspos data siswa/guru ke publik tanpa enkripsi dan hak akses yang sah.
 
 ---
 
@@ -389,5 +424,22 @@ Contoh menjalankan dengan flags:
 
 ---
 
-## 📄 Lisensi
-Didistribusikan di bawah lisensi [MIT](LICENSE). Dibuat untuk mendukung transparansi dan kemudahan pengelolaan data pendidikan di Indonesia.
+## ⚖️ Lisensi & Ketentuan Penggunaan Non-Komersial
+
+Proyek ini dirilis di bawah lisensi **[MIT License with Non-Commercial Restriction (MIT-NC)](LICENSE)**.
+
+### 📌 Ketentuan Penggunaan:
+1. **100% Gratis untuk Pendidikan**: Daemon ini sepenuhnya **gratis** digunakan oleh seluruh sekolah, guru, operator, siswa, akademisi, dan lembaga pendidikan di Indonesia.
+2. **Dilarang untuk Tujuan Komersial (Non-Commercial Only)**:
+   - Dilarang keras memperjualbelikan, memonetisasi, menjual kembali (*reselling*), atau mengemas daemon ini ke dalam produk perangkat lunak berbayar / layanan berbayar pihak ketiga tanpa izin tertulis dari pemegang hak cipta (**Ryan Ardian & SMA Negeri 1 Gedeg**).
+3. **Atribusi Hak Cipta**:
+   - Hak Cipta &copy; 2026 **Ryan Ardian** ([inisaya@ardianryan.com](mailto:inisaya@ardianryan.com)) & **SMA Negeri 1 Gedeg** ([@smansagewithai](https://www.instagram.com/smansagewithai/)).
+
+---
+
+## 📑 Dokumen Pendukung Repositori
+
+- 📜 [Changelog](CHANGELOG.md) - Catatan riwayat versi dan perubahan rilis.
+- 🛡️ [Security Policy & UU PDP](SECURITY.md) - Kebijakan keamanan, penegakan read-only & kepatuhan perlindungan data pribadi.
+- 🤝 [Contributing Guidelines](CONTRIBUTING.md) - Panduan kontribusi kode, standar Go, dan Pull Request.
+- 📜 [Code of Conduct](CODE_OF_CONDUCT.md) - Kode etik komunitas kontributor.
