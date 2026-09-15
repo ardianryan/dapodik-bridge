@@ -35,7 +35,11 @@ build-linux:
 build-darwin:
 	mkdir -p $(BUILD_DIR)
 	GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-darwin-arm64 ./cmd/bridge
-	GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-darwin-amd64 ./cmd/bridge
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-darwin-amd64 ./cmd/bridge
+	mkdir -p $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS $(BUILD_DIR)/DapodikBridge.app/Contents/Resources
+	cp $(BUILD_DIR)/$(BINARY)-darwin-arm64 $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS/DapodikBridge
+	chmod +x $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS/DapodikBridge
+	cp build/DapodikBridge.app/Contents/Info.plist $(BUILD_DIR)/DapodikBridge.app/Contents/Info.plist 2>/dev/null || true
 
 build-all: clean build-windows build-linux build-darwin
 	@echo "All binaries successfully built in $(BUILD_DIR)/"

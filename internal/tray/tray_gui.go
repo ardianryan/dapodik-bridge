@@ -1,4 +1,4 @@
-//go:build windows
+//go:build windows || (darwin && cgo)
 
 package tray
 
@@ -7,13 +7,14 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"runtime"
 
 	"github.com/ardianryan/dapodik-bridge/internal/autostart"
 	"github.com/ardianryan/dapodik-bridge/internal/config"
 	"github.com/energye/systray"
 )
 
-// Run starts the Windows system tray event loop. Blocks the calling thread.
+// Run starts the system tray event loop. Blocks the calling thread.
 func Run(ctx context.Context, state *AppState) {
 	onReady := func() {
 		systray.SetIcon(DefaultIconBytes())
@@ -56,28 +57,29 @@ func Run(ctx context.Context, state *AppState) {
 			}
 		})
 
-		systray.AddSeparator()
-
-		// Menu Item 5: Autostart toggle
-		autoMgr := autostart.NewManager()
-		mAutostart := systray.AddMenuItemCheckbox("Jalankan saat Startup Windows", "Aktifkan startup otomatis di background", autoMgr.IsEnabled())
-		mAutostart.Click(func() {
-			if mAutostart.Checked() {
-				if err := autoMgr.Disable(); err == nil {
-					mAutostart.Uncheck()
-					log.Printf("[INFO] Autostart disabled")
+		// Menu Item 5: Autostart toggle (Windows only)
+		if runtime.GOOS == "windows" {
+			systray.AddSeparator()
+			autoMgr := autostart.NewManager()
+			mAutostart := systray.AddMenuItemCheckbox("Jalankan saat Startup Windows", "Aktifkan startup otomatis di background", autoMgr.IsEnabled())
+			mAutostart.Click(func() {
+				if mAutostart.Checked() {
+					if err := autoMgr.Disable(); err == nil {
+						mAutostart.Uncheck()
+						log.Printf("[INFO] Autostart disabled")
+					} else {
+						log.Printf("[WARN] Failed to disable autostart: %v", err)
+					}
 				} else {
-					log.Printf("[WARN] Failed to disable autostart: %v", err)
+					if err := autoMgr.Enable(); err == nil {
+						mAutostart.Check()
+						log.Printf("[INFO] Autostart enabled")
+					} else {
+						log.Printf("[WARN] Failed to enable autostart: %v", err)
+					}
 				}
-			} else {
-				if err := autoMgr.Enable(); err == nil {
-					mAutostart.Check()
-					log.Printf("[INFO] Autostart enabled")
-				} else {
-					log.Printf("[WARN] Failed to enable autostart: %v", err)
-				}
-			}
-		})
+			})
+		}
 
 		systray.AddSeparator()
 
@@ -108,6 +110,14 @@ func Run(ctx context.Context, state *AppState) {
 }
 
 func openBrowser(url string) error {
-	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default:
+		cmd = exec.Command("xdg-open", url)
+	}
 	return cmd.Start()
 }

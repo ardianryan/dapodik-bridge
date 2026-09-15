@@ -121,8 +121,8 @@ func main() {
 		}
 	}
 
-	// 4. Default Mode: System Tray GUI (Windows Desktop) or Auto-Headless Console
-	isHeadless := runtime.GOOS != "windows" && os.Getenv("DISPLAY") == "" && os.Getenv("WAYLAND_DISPLAY") == ""
+	// 4. Default Mode: System Tray GUI (Windows & macOS Desktop) or Auto-Headless Console (Linux without display)
+	isHeadless := runtime.GOOS == "linux" && os.Getenv("DISPLAY") == "" && os.Getenv("WAYLAND_DISPLAY") == ""
 
 	var appArgs []string
 	for _, a := range os.Args[1:] {
