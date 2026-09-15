@@ -43,7 +43,7 @@ jobs:
           go-version: '1.22'
           check-latest: true
 
-      - name: Compile Cross-Platform Binaries
+      - name: Compile Windows & Linux Binaries
         run: |
           mkdir -p dist
           LDFLAGS="-s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=${{ steps.version.outputs.version }}'"
@@ -51,23 +51,17 @@ jobs:
           echo "Building Windows GUI amd64 (System Tray)..."
           GOOS=windows GOARCH=amd64 go build -ldflags="-H=windowsgui $LDFLAGS" -o dist/DapodikBridge-gui-windows-amd64.exe ./cmd/bridge
 
+          echo "Building Windows GUI 386 (System Tray 32-bit)..."
+          GOOS=windows GOARCH=386 go build -ldflags="-H=windowsgui $LDFLAGS" -o dist/DapodikBridge-gui-windows-386.exe ./cmd/bridge
+
           echo "Building Windows CLI amd64..."
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-windows-amd64.exe ./cmd/bridge
 
-          echo "Building Windows 386 (32-bit)..."
+          echo "Building Windows CLI 386 (32-bit)..."
           GOOS=windows GOARCH=386 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-windows-386.exe ./cmd/bridge
 
-          echo "Building Linux amd64..."
+          echo "Building Linux amd64 (Server/Docker)..."
           GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-linux-amd64 ./cmd/bridge
-
-          echo "Building Linux arm64..."
-          GOOS=linux GOARCH=arm64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-linux-arm64 ./cmd/bridge
-
-          echo "Building macOS Apple Silicon (arm64)..."
-          GOOS=darwin GOARCH=arm64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-darwin-arm64 ./cmd/bridge
-
-          echo "Building macOS Intel (amd64)..."
-          GOOS=darwin GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-darwin-amd64 ./cmd/bridge
 
           cd dist
           sha256sum * > checksums.txt
@@ -83,12 +77,10 @@ jobs:
           generate_release_notes: true
           files: |
             dist/DapodikBridge-gui-windows-amd64.exe
+            dist/DapodikBridge-gui-windows-386.exe
             dist/dapodik-bridge-windows-amd64.exe
             dist/dapodik-bridge-windows-386.exe
             dist/dapodik-bridge-linux-amd64
-            dist/dapodik-bridge-linux-arm64
-            dist/dapodik-bridge-darwin-arm64
-            dist/dapodik-bridge-darwin-amd64
             dist/checksums.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

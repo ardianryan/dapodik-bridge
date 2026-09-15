@@ -4,7 +4,7 @@ VERSION=1.1.0
 LDFLAGS=-ldflags="-s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=$(VERSION)'"
 WINDOWS_GUI_LDFLAGS=-ldflags="-H=windowsgui -s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=$(VERSION)'"
 
-.PHONY: all build clean test run release build-all build-windows build-linux build-darwin
+.PHONY: all build clean test run release build-all build-windows build-linux
 
 all: test build
 
@@ -32,14 +32,5 @@ build-linux:
 	GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-linux-amd64 ./cmd/bridge
 	GOOS=linux GOARCH=arm64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-linux-arm64 ./cmd/bridge
 
-build-darwin:
-	mkdir -p $(BUILD_DIR)
-	GOOS=darwin GOARCH=arm64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-darwin-arm64 ./cmd/bridge
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-darwin-amd64 ./cmd/bridge
-	mkdir -p $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS $(BUILD_DIR)/DapodikBridge.app/Contents/Resources
-	cp $(BUILD_DIR)/$(BINARY)-darwin-arm64 $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS/DapodikBridge
-	chmod +x $(BUILD_DIR)/DapodikBridge.app/Contents/MacOS/DapodikBridge
-	cp build/DapodikBridge.app/Contents/Info.plist $(BUILD_DIR)/DapodikBridge.app/Contents/Info.plist 2>/dev/null || true
-
-build-all: clean build-windows build-linux build-darwin
-	@echo "All binaries successfully built in $(BUILD_DIR)/"
+build-all: clean build-windows build-linux
+	@echo "All Windows and Linux binaries successfully built in $(BUILD_DIR)/"

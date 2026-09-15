@@ -32,7 +32,7 @@ func Run(ctx context.Context, state *AppState) {
 		systray.AddSeparator()
 
 		// Menu Item 3: Open Web Dashboard
-		dashboardURL := fmt.Sprintf("http://localhost:%d/health", state.Config.Port)
+		dashboardURL := fmt.Sprintf("http://localhost:%d/dashboard", state.Config.Port)
 		mDashboard := systray.AddMenuItem("Buka Dashboard (Browser)", "Buka status server di web browser")
 		mDashboard.Click(func() {
 			if err := openBrowser(dashboardURL); err != nil {

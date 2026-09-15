@@ -32,8 +32,13 @@ jobs:
         with:
           go-version-file: 'go.mod'
 
-      - name: Test Cross-Compilation
+      - name: Test Windows & Linux Cross-Compilation
         run: |
+          echo "Testing Windows CLI amd64..."
           GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/bridge
+          echo "Testing Windows GUI amd64..."
+          GOOS=windows GOARCH=amd64 go build -ldflags="-H=windowsgui" -o /dev/null ./cmd/bridge
+          echo "Testing Windows CLI 386..."
+          GOOS=windows GOARCH=386 go build -o /dev/null ./cmd/bridge
+          echo "Testing Linux amd64..."
           GOOS=linux GOARCH=amd64 go build -o /dev/null ./cmd/bridge
-          GOOS=darwin GOARCH=arm64 go build -o /dev/null ./cmd/bridge
