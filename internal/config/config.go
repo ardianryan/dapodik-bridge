@@ -34,7 +34,7 @@ const (
 	DefaultDBUser  = "postgres"
 	DefaultDBName  = "dapodik_dasmen"
 	DefaultSSLMode = "disable"
-	AppVersion     = "1.0.0"
+	AppVersion     = "1.1.0"
 )
 
 // LoadConfig loads configuration from flags, environment variables, and .env file

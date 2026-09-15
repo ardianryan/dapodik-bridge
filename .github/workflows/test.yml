@@ -27,6 +27,11 @@ jobs:
       - name: Run Tests
         run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
 
+      - name: Run Go Vulnerability Check (govulncheck)
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: 'go.mod'
+
       - name: Test Cross-Compilation
         run: |
           GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/bridge

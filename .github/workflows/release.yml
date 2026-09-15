@@ -48,7 +48,10 @@ jobs:
           mkdir -p dist
           LDFLAGS="-s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=${{ steps.version.outputs.version }}'"
 
-          echo "Building Windows amd64..."
+          echo "Building Windows GUI amd64 (System Tray)..."
+          GOOS=windows GOARCH=amd64 go build -ldflags="-H=windowsgui $LDFLAGS" -o dist/DapodikBridge-gui-windows-amd64.exe ./cmd/bridge
+
+          echo "Building Windows CLI amd64..."
           GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/dapodik-bridge-windows-amd64.exe ./cmd/bridge
 
           echo "Building Windows 386 (32-bit)..."
@@ -79,6 +82,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
+            dist/DapodikBridge-gui-windows-amd64.exe
             dist/dapodik-bridge-windows-amd64.exe
             dist/dapodik-bridge-windows-386.exe
             dist/dapodik-bridge-linux-amd64

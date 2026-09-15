@@ -5,6 +5,27 @@ Format penulisan mengacu pada [Keep a Changelog](https://keepachangelog.com/id/1
 
 ---
 
+## [1.1.0] - 2026-09-15
+
+### Ditambahkan
+- **Mode Desktop System Tray (`DapodikBridge-gui-windows-amd64.exe`)**:
+  - Kompilasi Windows GUI tanpa konsol (`-H=windowsgui`), menghilangkan jendela hitam CMD secara total.
+  - Ikon status dinamis di pojok kanan bawah taskbar (System Tray) dengan menu interaktif.
+  - Kebal penutupan tidak sengaja (*anti-close*): tombol close tidak mematikan service, melainkan sembunyi di System Tray.
+- **Autostart Otomatis Bebas UAC**:
+  - Pendaftaran startup otomatis saat booting pada level user (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`).
+  - Tidak memicu popup UAC (*Run as Admin*) sehingga dijamin berjalan otomatis dan *silent* ke Tray.
+  - Opsi toggle aktif/nonaktif autostart langsung dari klik kanan menu System Tray.
+- **Dukungan Native Windows Service (`services.msc`)**:
+  - Integrasi `kardianos/service` untuk komputer server sekolah 24/7.
+  - Subperintah CLI: `service install`, `service uninstall`, `service start`, `service stop`, dan `service status`.
+  - Dukungan restart otomatis jika terjadi kegagalan sistem (*auto-recovery*).
+- **Otomatisasi Keamanan Dependabot**:
+  - Konfigurasi `.github/dependabot.yml` untuk memantau pembaruan berkala dependensi Go (`gomod`) dan workflow (`github-actions`).
+  - Penambahan audit kerentanan otomatis Go (`govulncheck`) pada alur CI `test.yml`.
+
+---
+
 ## [1.0.0] - 2026-09-14
 
 ### Ditambahkan

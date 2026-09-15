@@ -1,7 +1,8 @@
 BINARY=dapodik-bridge
 BUILD_DIR=build
-VERSION=1.0.0
+VERSION=1.1.0
 LDFLAGS=-ldflags="-s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=$(VERSION)'"
+WINDOWS_GUI_LDFLAGS=-ldflags="-H=windowsgui -s -w -X 'github.com/ardianryan/dapodik-bridge/internal/config.AppVersion=$(VERSION)'"
 
 .PHONY: all build clean test run release build-all build-windows build-linux build-darwin
 
@@ -21,7 +22,9 @@ clean:
 
 build-windows:
 	mkdir -p $(BUILD_DIR)
+	GOOS=windows GOARCH=amd64 go build $(WINDOWS_GUI_LDFLAGS) -o $(BUILD_DIR)/DapodikBridge-gui-amd64.exe ./cmd/bridge
 	GOOS=windows GOARCH=amd64 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-windows-amd64.exe ./cmd/bridge
+	GOOS=windows GOARCH=386 go build $(WINDOWS_GUI_LDFLAGS) -o $(BUILD_DIR)/DapodikBridge-gui-386.exe ./cmd/bridge
 	GOOS=windows GOARCH=386 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY)-windows-386.exe ./cmd/bridge
 
 build-linux:

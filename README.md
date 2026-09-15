@@ -329,34 +329,57 @@ curl -X POST "http://localhost:4712/api/v1/sync/push?type=welfare" \
 
 ---
 
-## 💻 Panduan Instalasi & Menjalankan
+## 💻 Panduan Instalasi & Penggunaan
 
-### Untuk Operator Dapodik (Windows)
+### 1. Mode Desktop System Tray (Paling Direkomendasikan untuk Operator)
 
-1. Buka halaman **[Releases](https://github.com/ardianryan/dapodik-bridge/releases)**.
-2. Unduh file binary `dapodik-bridge-windows-amd64.exe` (untuk Windows 64-bit) atau `dapodik-bridge-windows-386.exe` (untuk Windows 32-bit).
-3. Letakkan di folder mana saja (misal: `C:\dapodik-bridge\`).
-4. Jalankan melalui Command Prompt atau klik dua kali:
-   ```cmd
-   dapodik-bridge-windows-amd64.exe
-   ```
-5. Daemon langsung menyala di port `4712` dan otomatis mencari kredensial Dapodik lokal:
-   ```text
-   [INFO] Initializing Dapodik Bridge on port 4712 (host: 0.0.0.0)...
-   [INFO] Connected to Dapodik PostgreSQL at 127.0.0.1:5432/dapodik_dasmen (read-only enforced)
-   [INFO] Dapodik Bridge Daemon is listening on http://0.0.0.0:4712
-   ```
+Didesain khusus untuk laptop/komputer operator sekolah agar **bebas dari jendela hitam CMD yang mengganggu dan kebal terhadap penutupan tidak sengaja (*anti-close*)**:
 
-### Menjalankan sebagai Background Service Windows (NSSM)
+1. Unduh **`DapodikBridge-gui-windows-amd64.exe`** dari halaman **[Releases](https://github.com/ardianryan/dapodik-bridge/releases)**.
+2. Letakkan di folder mana saja (misal: `C:\dapodik-bridge\`) lalu **klik dua kali**.
+3. **Hasilnya:**
+   - Tidak ada jendela CMD hitam sama sekali.
+   - Ikon **Dapodik Bridge** langsung aktif di **System Tray** (pojok kanan bawah dekat jam Windows).
+   - **Autostart Otomatis Aktif**: Saat pertama kali dibuka, aplikasi otomatis mendaftarkan diri ke Windows Startup user (`HKCU`) sehingga setiap kali komputer dinyalakan, bridge langsung menyala otomatis di latar belakang tanpa diblokir popup UAC.
+4. **Menu Tray**:
+   - Klik kanan ikon tray untuk melihat status koneksi database Dapodik.
+   - **Buka Dashboard**: Membuka antarmuka web di browser (`http://localhost:4712/health`).
+   - **Sinkronisasi Sekarang**: Memaksa push webhook segera ke server cloud sekolah.
+   - **Jalankan saat Startup Windows**: Opsi centang untuk mengaktifkan/menonaktifkan autostart.
+   - **Keluar**: Menutup aplikasi secara aman jika diperlukan.
 
-Agar bridge otomatis berjalan setiap kali laptop/server operator menyala tanpa perlu membuka terminal:
+---
 
-1. Unduh [NSSM (Non-Sucking Service Manager)](https://nssm.cc/).
-2. Buka Command Prompt Administrator dan ketik:
-   ```cmd
-   nssm install DapodikBridge C:\dapodik-bridge\dapodik-bridge-windows-amd64.exe
-   nssm start DapodikBridge
-   ```
+### 2. Mode Native Windows Service (Untuk Komputer Server 24/7)
+
+Jika komputer Dapodik difungsikan sebagai server yang menyala 24/7 dan harus berjalan sebelum ada user login:
+
+Buka Command Prompt sebagai Administrator:
+```cmd
+# 1. Daftarkan service ke Windows
+dapodik-bridge-windows-amd64.exe service install
+
+# 2. Nyalakan service
+dapodik-bridge-windows-amd64.exe service start
+
+# 3. Cek status service
+dapodik-bridge-windows-amd64.exe service status
+
+# (Opsional) Menghentikan atau mencopot service:
+dapodik-bridge-windows-amd64.exe service stop
+dapodik-bridge-windows-amd64.exe service uninstall
+```
+*Catatan: Windows Service berjalan menggunakan `LocalSystem` dengan fitur auto-recovery (restart otomatis jika terjadi crash).*
+
+---
+
+### 3. Mode CLI Console Standar (Linux, macOS, Docker, atau Debugging)
+
+Untuk keperluan terminal atau server berbasis Linux/Docker:
+```bash
+# Menjalankan daemon secara interaktif di konsol
+./dapodik-bridge run -port=4712
+```
 
 ---
 
