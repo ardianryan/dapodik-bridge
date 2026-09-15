@@ -7,7 +7,7 @@ require (
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kardianos/service v1.3.0
-	golang.org/x/sys v0.34.0
+	golang.org/x/sys v0.48.0
 )
 
 require (
