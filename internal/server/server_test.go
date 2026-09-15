@@ -38,6 +38,40 @@ func TestRootEndpoint(t *testing.T) {
 	}
 }
 
+func TestDashboardEndpoint(t *testing.T) {
+	cfg := &config.Config{
+		Port: 4712,
+		Host: "0.0.0.0",
+	}
+	db, _ := database.NewDBManager(t.Context(), cfg)
+	srv := NewServer(cfg, db)
+
+	// Test /dashboard directly
+	req := httptest.NewRequest(http.MethodGet, "/dashboard", nil)
+	rr := httptest.NewRecorder()
+	srv.Routes().ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rr.Code)
+	}
+	if rr.Header().Get("Content-Type") != "text/html; charset=utf-8" {
+		t.Fatalf("expected text/html content type, got %s", rr.Header().Get("Content-Type"))
+	}
+
+	// Test / with Accept: text/html (browser request)
+	reqBrowser := httptest.NewRequest(http.MethodGet, "/", nil)
+	reqBrowser.Header.Set("Accept", "text/html,application/xhtml+xml")
+	rrBrowser := httptest.NewRecorder()
+	srv.Routes().ServeHTTP(rrBrowser, reqBrowser)
+
+	if rrBrowser.Code != http.StatusOK {
+		t.Fatalf("expected status 200, got %d", rrBrowser.Code)
+	}
+	if rrBrowser.Header().Get("Content-Type") != "text/html; charset=utf-8" {
+		t.Fatalf("expected text/html content type, got %s", rrBrowser.Header().Get("Content-Type"))
+	}
+}
+
 func TestHealthEndpoint(t *testing.T) {
 	cfg := &config.Config{
 		Port:   4712,

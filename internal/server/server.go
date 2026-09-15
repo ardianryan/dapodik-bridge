@@ -34,8 +34,9 @@ func NewServer(cfg *config.Config, db *database.DBManager) *Server {
 func (s *Server) Routes() http.Handler {
 	mux := http.NewServeMux()
 
-	// Root & Health
+	// Root, Dashboard & Health
 	mux.HandleFunc("/", s.handleRoot)
+	mux.HandleFunc("/dashboard", s.handleDashboard)
 	mux.HandleFunc("/api/v1/health", s.handleHealth)
 
 	// Welfare / Bansos

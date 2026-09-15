@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ardianryan/dapodik-bridge/internal/config"
@@ -13,6 +14,12 @@ import (
 func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
+		return
+	}
+
+	// If accessed from a web browser, render the visual dashboard
+	if r.Header.Get("Accept") != "" && (r.Header.Get("Sec-Fetch-Dest") == "document" || strings.Contains(r.Header.Get("Accept"), "text/html")) {
+		s.handleDashboard(w, r)
 		return
 	}
 
