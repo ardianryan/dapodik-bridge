@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,7 +26,8 @@ func (s *Server) handleKesejahteraan(w http.ResponseWriter, r *http.Request) {
 	results, total, err := s.db.GetKesejahteraan(ctx, jenis, limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data kesejahteraan: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleKesejahteraan error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data kesejahteraan", execMs)
 		return
 	}
 
@@ -57,7 +59,8 @@ func (s *Server) handlePIP(w http.ResponseWriter, r *http.Request) {
 	results, total, err := s.db.GetKesejahteraan(ctx, "pip", limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data PIP: "+err.Error(), execMs)
+		log.Printf("[ERROR] handlePIP error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data PIP", execMs)
 		return
 	}
 

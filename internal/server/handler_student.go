@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,7 +27,8 @@ func (s *Server) handleSiswaKomprehensif(w http.ResponseWriter, r *http.Request)
 	results, total, err := s.db.GetSiswaKomprehensif(ctx, q, rombelID, limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data siswa: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleSiswaKomprehensif error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data siswa", execMs)
 		return
 	}
 

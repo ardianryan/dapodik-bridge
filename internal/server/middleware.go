@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -52,14 +53,54 @@ func LoggingAndMetricsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// CORSMiddleware enables cross-origin requests for school dashboards
-func CORSMiddleware(next http.Handler) http.Handler {
+// isAllowedOrigin validates whether the requesting origin is localhost/loopback or explicitly allowed
+func isAllowedOrigin(origin string, customOrigins string) bool {
+	if origin == "" {
+		return false
+	}
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	hostname := u.Hostname()
+	if hostname == "localhost" || hostname == "127.0.0.1" || hostname == "::1" {
+		return true
+	}
+	if customOrigins != "" {
+		for _, o := range strings.Split(customOrigins, ",") {
+			if strings.TrimSpace(o) == origin {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// CORSMiddleware restricts cross-origin access to localhost and explicitly configured origins
+func CORSMiddleware(cfg *config.Config, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, X-Requested-With")
+		origin := r.Header.Get("Origin")
+		allowed := false
+
+		if origin != "" {
+			allowedList := ""
+			if cfg != nil {
+				allowedList = cfg.CORSAllowedOrigins
+			}
+			if isAllowedOrigin(origin, allowedList) {
+				allowed = true
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, X-Requested-With")
+				w.Header().Set("Vary", "Origin")
+			}
+		}
 
 		if r.Method == http.MethodOptions {
+			if !allowed && origin != "" {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -22,7 +23,8 @@ func (s *Server) handleSchemaTables(w http.ResponseWriter, r *http.Request) {
 	tables, err := s.db.GetSchemaTables(ctx)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal inspeksi skema tabel: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleSchemaTables error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal inspeksi skema tabel", execMs)
 		return
 	}
 
@@ -56,7 +58,8 @@ func (s *Server) handleSchemaColumns(w http.ResponseWriter, r *http.Request) {
 	cols, err := s.db.GetSchemaColumns(ctx, table)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal inspeksi kolom tabel: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleSchemaColumns error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal inspeksi kolom tabel", execMs)
 		return
 	}
 

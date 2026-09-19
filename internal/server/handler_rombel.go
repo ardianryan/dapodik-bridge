@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,7 +26,8 @@ func (s *Server) handleRombel(w http.ResponseWriter, r *http.Request) {
 	results, total, err := s.db.GetRombel(ctx, semesterID, limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca rombel: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleRombel error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data rombel", execMs)
 		return
 	}
 

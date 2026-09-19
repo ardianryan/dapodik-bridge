@@ -11,26 +11,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ardianryan/dapodik-bridge/internal/autostart"
 	"github.com/ardianryan/dapodik-bridge/internal/config"
 	"github.com/ardianryan/dapodik-bridge/internal/database"
 	"github.com/ardianryan/dapodik-bridge/internal/server"
 	"github.com/ardianryan/dapodik-bridge/internal/service"
 	"github.com/ardianryan/dapodik-bridge/internal/tray"
 )
-
-const banner = `
-===================================================================
-    ____                    _ _    ____       _     _            
-   |  _ \  __ _ _ __   ___   | (_) | __ ) _ __(_) __| | __ _  ___ 
-   | | | |/ _` + "`" + ` | '_ \ / _ \  | | | |  _ \| '__| |/ _` + "`" + ` |/ _` + "`" + ` |/ _ \
-   | |_| | (_| | |_) | (_) | | | | | |_) | |  | | (_| | (_| |  __/
-   |____/ \__,_| .__/ \___/  |_|_| |____/|_|  |_|\__,_|\__, |\___|
-               |_|                                     |___/      
-   Dapodik Read-Only Bridge Daemon (Version %s)
-   Strict Read-Only Mode: ENFORCED
-===================================================================
-`
 
 func runBridgeEngine(ctx context.Context, cfg *config.Config) error {
 	log.Printf("[INFO] Initializing Dapodik Bridge on port %d (host: %s)...", cfg.Port, cfg.Host)
@@ -68,13 +54,11 @@ func main() {
 	if len(os.Args) > 1 {
 		arg := os.Args[1]
 
-		// 1. Version check
 		if arg == "version" || arg == "-version" || arg == "--version" {
 			fmt.Printf("dapodik-bridge version %s\n", config.AppVersion)
 			os.Exit(0)
 		}
 
-		// 2. Windows Service / Linux Systemd CLI Command
 		if arg == "service" {
 			cmd := "status"
 			if len(os.Args) > 2 {
@@ -96,9 +80,8 @@ func main() {
 			return
 		}
 
-		// 3. Explicit CLI Console Run Mode
 		if arg == "run" {
-			fmt.Printf(banner, config.AppVersion)
+			log.Printf("[INFO] Starting dapodik-bridge v%s (strict read-only mode)", config.AppVersion)
 			cfg, err := config.LoadConfig(os.Args[2:])
 			if err != nil {
 				log.Fatalf("[FATAL] Configuration error: %v", err)
@@ -121,7 +104,6 @@ func main() {
 		}
 	}
 
-	// 4. Default Mode: System Tray GUI (Windows & macOS Desktop) or Auto-Headless Console (Linux without display)
 	isHeadless := runtime.GOOS == "linux" && os.Getenv("DISPLAY") == "" && os.Getenv("WAYLAND_DISPLAY") == ""
 
 	var appArgs []string
@@ -137,8 +119,7 @@ func main() {
 	}
 
 	if isHeadless {
-		// Headless Linux / Docker container fallback
-		fmt.Printf(banner, config.AppVersion)
+		log.Printf("[INFO] Starting dapodik-bridge v%s in headless mode", config.AppVersion)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 
@@ -154,13 +135,6 @@ func main() {
 			log.Fatalf("[FATAL] %v", err)
 		}
 		return
-	}
-
-	// Desktop Tray Mode
-	// On Windows first-run, enable autostart in HKCU automatically
-	autoMgr := autostart.NewManager()
-	if !autoMgr.IsEnabled() {
-		_ = autoMgr.Enable()
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

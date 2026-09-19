@@ -186,7 +186,10 @@ func (m *DBManager) Close() {
 	}
 }
 
-// SanitizeSQL guarantees safety: rejects any DDL or write statements
+// SanitizeSQL provides an auxiliary keyword sanity check.
+// Note: Primary read-only enforcement is guaranteed by PostgreSQL session configuration
+// (SET default_transaction_read_only = on) and parameterized queries across all handlers.
+// Keyword matching alone is not sufficient to prevent injection and should not be relied upon as the sole defense.
 func SanitizeSQL(query string) error {
 	q := strings.TrimSpace(strings.ToUpper(query))
 	forbidden := []string{

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -15,10 +16,8 @@ import (
 )
 
 type PushRequest struct {
-	TargetURL   string `json:"target_url,omitempty"`
-	SecretToken string `json:"secret_token,omitempty"`
-	Type        string `json:"type,omitempty"` // "welfare", "rapor", "siswa", "gtk", "all"
-	SemesterID  string `json:"semester_id,omitempty"`
+	Type       string `json:"type,omitempty"` // "welfare", "rapor", "siswa", "gtk"
+	SemesterID string `json:"semester_id,omitempty"`
 }
 
 type PushResult struct {
@@ -51,19 +50,14 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 		req.Type = "welfare" // Default push type
 	}
 
-	targetURL := req.TargetURL
+	// Security: Target URL must strictly come from daemon configuration to prevent SSRF
+	targetURL := s.cfg.PushTargetURL
 	if targetURL == "" {
-		targetURL = s.cfg.PushTargetURL
-	}
-	if targetURL == "" {
-		writeJSONError(w, http.StatusBadRequest, "Target URL belum dikonfigurasi. Isi 'target_url' pada body JSON atau atur PUSH_TARGET_URL pada environment.", 0)
+		writeJSONError(w, http.StatusBadRequest, "Target URL belum dikonfigurasi pada server daemon. Atur PUSH_TARGET_URL di konfigurasi environment.", 0)
 		return
 	}
 
-	secretToken := req.SecretToken
-	if secretToken == "" {
-		secretToken = s.cfg.PushSecretToken
-	}
+	secretToken := s.cfg.PushSecretToken
 
 	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
 	defer cancel()
@@ -75,7 +69,8 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 	case "welfare", "kesejahteraan", "pip":
 		items, count, err := s.db.GetKesejahteraan(ctx, "", 10000, 0)
 		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data kesejahteraan: "+err.Error(), time.Since(start).Milliseconds())
+			log.Printf("[ERROR] Push failed to query kesejahteraan: %v", err)
+			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data kesejahteraan", time.Since(start).Milliseconds())
 			return
 		}
 		dataToPush = items
@@ -84,7 +79,8 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 	case "rapor":
 		items, count, err := s.db.GetRaporGrades(ctx, req.SemesterID, "", "", 10000, 0)
 		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data rapor: "+err.Error(), time.Since(start).Milliseconds())
+			log.Printf("[ERROR] Push failed to query rapor: %v", err)
+			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data rapor", time.Since(start).Milliseconds())
 			return
 		}
 		dataToPush = items
@@ -93,7 +89,8 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 	case "siswa":
 		items, count, err := s.db.GetSiswaKomprehensif(ctx, "", "", 10000, 0)
 		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data siswa: "+err.Error(), time.Since(start).Milliseconds())
+			log.Printf("[ERROR] Push failed to query siswa: %v", err)
+			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data siswa", time.Since(start).Milliseconds())
 			return
 		}
 		dataToPush = items
@@ -102,7 +99,8 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 	case "gtk":
 		items, count, err := s.db.GetGTKLengkap(ctx, "", 10000, 0)
 		if err != nil {
-			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data GTK: "+err.Error(), time.Since(start).Milliseconds())
+			log.Printf("[ERROR] Push failed to query GTK: %v", err)
+			writeJSONError(w, http.StatusInternalServerError, "Gagal mengambil data GTK", time.Since(start).Milliseconds())
 			return
 		}
 		dataToPush = items
@@ -125,13 +123,15 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membuat payload push: "+err.Error(), time.Since(start).Milliseconds())
+		log.Printf("[ERROR] Failed to marshal push payload: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membuat payload push", time.Since(start).Milliseconds())
 		return
 	}
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, targetURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membuat HTTP request push: "+err.Error(), time.Since(start).Milliseconds())
+		log.Printf("[ERROR] Failed to create push HTTP request: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membuat HTTP request push", time.Since(start).Milliseconds())
 		return
 	}
 
@@ -148,7 +148,8 @@ func (s *Server) handleSyncPush(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(httpReq)
 	if err != nil {
-		writeJSONError(w, http.StatusBadGateway, fmt.Sprintf("Gagal menghubungi target push (%s): %v", targetURL, err), time.Since(start).Milliseconds())
+		log.Printf("[ERROR] Failed to execute push to %s: %v", targetURL, err)
+		writeJSONError(w, http.StatusBadGateway, "Gagal menghubungi target push webhook", time.Since(start).Milliseconds())
 		return
 	}
 	defer resp.Body.Close()

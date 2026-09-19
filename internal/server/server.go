@@ -60,7 +60,7 @@ func (s *Server) Routes() http.Handler {
 
 	// Wrap middleware stack: Logger -> CORS -> Auth -> Mux
 	handler := AuthMiddleware(s.cfg, mux)
-	handler = CORSMiddleware(handler)
+	handler = CORSMiddleware(s.cfg, handler)
 	handler = LoggingAndMetricsMiddleware(handler)
 
 	return handler

@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -27,7 +28,8 @@ func (s *Server) handleRapor(w http.ResponseWriter, r *http.Request) {
 	results, total, err := s.db.GetRaporGrades(ctx, semesterID, rombelID, nisn, limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca nilai rapor: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleRapor error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca nilai rapor", execMs)
 		return
 	}
 

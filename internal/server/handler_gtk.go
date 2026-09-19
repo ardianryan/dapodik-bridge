@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,7 +26,8 @@ func (s *Server) handleGTKLengkap(w http.ResponseWriter, r *http.Request) {
 	results, total, err := s.db.GetGTKLengkap(ctx, q, limit, offset)
 	execMs := time.Since(start).Milliseconds()
 	if err != nil {
-		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data GTK: "+err.Error(), execMs)
+		log.Printf("[ERROR] handleGTKLengkap error: %v", err)
+		writeJSONError(w, http.StatusInternalServerError, "Gagal membaca data GTK", execMs)
 		return
 	}
 

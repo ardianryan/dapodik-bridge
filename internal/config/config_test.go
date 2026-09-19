@@ -22,6 +22,9 @@ func TestDefaultConfig(t *testing.T) {
 	if cfg.Port != 4712 {
 		t.Errorf("expected port 4712 as requested, got %d", cfg.Port)
 	}
+	if cfg.Host != "127.0.0.1" {
+		t.Errorf("expected default Host 127.0.0.1, got %s", cfg.Host)
+	}
 	if cfg.DBHost != "127.0.0.1" {
 		t.Errorf("expected default DBHost 127.0.0.1, got %s", cfg.DBHost)
 	}
@@ -66,5 +69,22 @@ func TestConfigFlags(t *testing.T) {
 	}
 	if cfg.APIKey != "secret123" {
 		t.Errorf("expected api-key secret123, got %s", cfg.APIKey)
+	}
+}
+
+func TestHost0000RequiresAPIKey(t *testing.T) {
+	// host 0.0.0.0 without API key should be rejected for safety
+	_, err := LoadConfig([]string{"-host=0.0.0.0", "-api-key="})
+	if err == nil {
+		t.Errorf("expected error when host is 0.0.0.0 and api-key is empty, got nil")
+	}
+
+	// host 0.0.0.0 with API key should succeed
+	cfg, err := LoadConfig([]string{"-host=0.0.0.0", "-api-key=secure_token"})
+	if err != nil {
+		t.Fatalf("unexpected error when host is 0.0.0.0 with api-key: %v", err)
+	}
+	if cfg.Host != "0.0.0.0" {
+		t.Errorf("expected host 0.0.0.0, got %s", cfg.Host)
 	}
 }
